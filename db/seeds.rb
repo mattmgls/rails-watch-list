@@ -5,6 +5,8 @@
 #
 #   movies = Movie.create([{ name: "Star Wars" }, { name: "Lord of the Rings" }])
 #   Character.create(name: "Luke", movie: movies.first)
+require "open-uri"
+require "json"
 
 puts "Cleaning database..."
 
@@ -14,12 +16,20 @@ Movie.destroy_all
 
 puts "Creating movies with faker..."
 
-10.times do
-  movie = Movie.new(
-    title: Faker::Movie.title,
-    overview: Faker::Movie.quote
+
+puts "Creating movies..."
+
+url = "http://tmdb.lewagon.com/movie/top_rated"
+movies_serialized = URI.open(url).read
+movies = JSON.parse(movies_serialized)
+
+movies["results"].each do |movie|
+  Movie.create!(
+    title: movie["title"],
+    overview: movie["overview"],
+    poster_url: "https://image.tmdb.org/t/p/w500#{movie["poster_path"]}",
+    rating: movie["vote_average"]
   )
-  movie.save!
 end
 
 puts "Creating lists with faker..."
